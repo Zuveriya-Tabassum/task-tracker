@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Add Task{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('tasks') }}" class="btn btn-link mb-3" style="text-decoration:none;">← Back to Tasks</a>
+
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <h3 class="card-title mb-4 text-center">➕ New Task</h3>
+
+        {# flash messages #}
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="alert alert-success">
+              {{ messages[0] }}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">Title <span class="text-danger">*</span></label>
+            <input type="text" name="title" class="form-control" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea name="description" rows="3" class="form-control"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <input type="text" name="category" class="form-control" placeholder="Optional">
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Save Task</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

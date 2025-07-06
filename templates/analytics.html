@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('dashboard') }}" style="text-decoration: none; font-size: 24px; color: inherit;">←</a>
+
+
+<h2 class="mb-3">Analytics Dashboard</h2>
+
+<div class="row mb-4">
+  <div class="col-md-4">
+      <div class="card text-center">
+          <div class="card-body">
+              <h5 class="card-title">Total Tasks</h5>
+              <p class="display-6">{{ total }}</p>
+          </div>
+      </div>
+  </div>
+  <div class="col-md-4">
+      <div class="card text-center">
+          <div class="card-body text-success">
+              <h5 class="card-title">Completed</h5>
+              <p class="display-6">{{ completed }}</p>
+          </div>
+      </div>
+  </div>
+  <div class="col-md-4">
+      <div class="card text-center">
+          <div class="card-body text-danger">
+              <h5 class="card-title">Pending</h5>
+              <p class="display-6">{{ pending }}</p>
+          </div>
+      </div>
+  </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- Pie Chart -->
+<div class="mb-5">
+    <h4 class="text-center">Completion Ratio</h4>
+    <!-- <canvas id="pieChart" height="100"></canvas> -->
+    <!-- <canvas id="pieChart" width="300" height="150" style="max-width: 100%;"></canvas> -->
+    <div class="chart-container" style="max-width: 400px; margin: auto;">
+  <canvas id="pieChart" width="300" height="300"></canvas>
+</div>
+
+</div>
+
+<!-- Bar Chart -->
+<div class="mb-5">
+    <h4 class="text-center">7-Day Task Trend</h4>
+    <!-- <canvas id="barChart" height="100"></canvas> -->
+
+<div class="chart-container" style="max-width: 600px; margin: auto;">
+  <canvas id="barChart" width="500" height="250"></canvas>
+</div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    /* ---------- Pie Chart ---------- */
+    new Chart(document.getElementById("pieChart"), {
+        type: 'doughnut',
+        data: {
+            labels: ["Completed", "Pending"],
+            datasets: [{
+                /* convert to valid JS array */
+                data: {{ [completed, pending] | tojson }},
+                backgroundColor: ['#28a745', '#dc3545']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+
+    /* ---------- Bar Chart ---------- */
+    new Chart(document.getElementById("barChart"), {
+        type: 'bar',
+        data: {
+            labels: {{ labels | tojson }},
+            datasets: [
+                {
+                    label: "Completed",
+                    data: {{ completed_counts | tojson }},
+                    backgroundColor: '#28a745'
+                },
+                {
+                    label: "Pending",
+                    data: {{ pending_counts | tojson }},
+                    backgroundColor: '#dc3545'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 }
+                }
+            }
+        }   /* ← no trailing comma here */
+    });
+});
+
+</script>
+{% endblock %}
+

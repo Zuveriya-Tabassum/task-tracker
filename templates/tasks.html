@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Tasks{% endblock %}
+
+{% block content %}
+<a href="{{ url_for('dashboard') }}" class="btn btn-link mb-3" style="text-decoration: none;">← Dashboard</a>
+
+<h2 class="mb-3">Your Tasks</h2>
+
+<!-- 🔍 Filters -->
+<form method="GET" action="{{ url_for('tasks') }}" class="filters mb-4">
+  <div class="row g-2 align-items-center">
+    <div class="col-md-auto">
+      <label for="q">Search</label>
+      <input type="text" name="q" id="q" value="{{ request.args.get('q', '') }}" class="form-control">
+    </div>
+    <div class="col-md-auto">
+      <label for="status">Status</label>
+      <select name="status" id="status" class="form-select">
+        <option value="all" {% if request.args.get('status') == 'all' %}selected{% endif %}>All</option>
+        <option value="completed" {% if request.args.get('status') == 'completed' %}selected{% endif %}>Completed</option>
+        <option value="pending" {% if request.args.get('status') == 'pending' %}selected{% endif %}>Pending</option>
+      </select>
+    </div>
+    <div class="col-md-auto">
+      <label for="sort">Sort By</label>
+      <select name="sort" id="sort" class="form-select">
+        <option value="latest" {% if request.args.get('sort') == 'latest' %}selected{% endif %}>Newest</option>
+        <option value="oldest" {% if request.args.get('sort') == 'oldest' %}selected{% endif %}>Oldest</option>
+        <option value="title" {% if request.args.get('sort') == 'title' %}selected{% endif %}>Title A–Z</option>
+      </select>
+    </div>
+    <div class="col-md-auto">
+      <button type="submit" class="btn btn-primary mt-4">Apply</button>
+    </div>
+  </div>
+</form>
+
+<!-- 📂 Grouped Tasks -->
+{% for category, tasks_in_category in grouped_tasks.items() %}
+<details class="mb-4">
+  <summary style="font-weight: bold;">📂 {{ category }} ({{ tasks_in_category|length }})</summary>
+
+  {% for task in tasks_in_category %}
+  <div class="task-card {% if task.is_complete %}completed{% else %}pending{% endif %}">
+    <div class="d-flex justify-content-between align-items-center">
+      <div class="flex-grow-1">
+        <h5>{{ task.title }}</h5>
+        <p class="mb-1">{{ task.description }}</p>
+        <div class="small text-muted">
+          ⏱️ Logged:
+          <span id="display-{{ task.id }}" data-total="{{ task.duration_seconds }}">
+            {{ "%02d:%02d" | format((task.duration_seconds // 60), (task.duration_seconds % 60)) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="ms-3 d-flex flex-column gap-1 align-items-end">
+        <div>
+          <button class="btn btn-sm btn-outline-success me-1" onclick="startTimer({{ task.id }})">▶️</button>
+          <button class="btn btn-sm btn-outline-warning me-1" onclick="pauseTimer({{ task.id }})">⏸️</button>
+        </div>
+        <div class="d-flex gap-2 mt-1">
+          <a href="{{ url_for('toggle_task', task_id=task.id) }}" title="Toggle Status">✅/⏳</a>
+          <a href="{{ url_for('edit_task', task_id=task.id) }}" title="Edit">✏️</a>
+          <a href="{{ url_for('delete_task', task_id=task.id) }}" onclick="return confirm('Delete this task?')" title="Delete">🗑️</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</details>
+{% endfor %}
+
+<!-- ⏱️ Live Timer Script -->
+<script>
+const timers = {}; // taskId -> {base, elapsed, interval}
+
+function formatSecs(sec) {
+  const m = String(Math.floor(sec / 60)).padStart(2, '0');
+  const s = String(sec % 60).padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+function startTimer(id) {
+  const span = document.getElementById(`display-${id}`);
+  if (timers[id] && timers[id].interval) return;
+
+  const base = parseInt(span.dataset.total, 10) || 0;
+  timers[id] = { base, elapsed: 0 };
+
+  timers[id].interval = setInterval(() => {
+    timers[id].elapsed++;
+    span.textContent = formatSecs(timers[id].base + timers[id].elapsed);
+  }, 1000);
+}
+
+function pauseTimer(id) {
+  const info = timers[id];
+  if (!info || !info.interval) return;
+
+  clearInterval(info.interval);
+  const newTotal = info.base + info.elapsed;
+
+ fetch(`/log_time/${id}`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ seconds: info.elapsed })
+})
+.then(r => r.json())
+.then(data => {
+  const span = document.getElementById(`display-${id}`);
+  span.dataset.total = data.new_total;
+  span.textContent = formatSecs(data.new_total);
+  delete timers[id];
+});
+
+}
+
+</script>
+{% endblock %}
