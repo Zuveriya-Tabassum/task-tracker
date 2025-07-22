@@ -23,6 +23,9 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(150), nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(256), nullable=False)
+    registered_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login_at = db.Column(db.DateTime)
+
 
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -126,8 +129,18 @@ def register():
             return redirect(url_for('register'))
 
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        new_user = User(username=username, email=email, password=hashed_password)
+        
         db.session.add(new_user)
+        from datetime import datetime
+
+        new_user = User(
+        username=username,
+        email=email,
+        password=hashed_password,
+        
+        registered_at=datetime.utcnow()
+        )
+
         db.session.commit()
 
         flash('Registration successful! Please log in.')
@@ -146,10 +159,16 @@ def login():
             flash('Invalid credentials')
             return redirect(url_for('login'))
 
-        login_user(user)
+        login_user(user)  #Login first
+
+        # then record login timestamp
+        user.last_login_at = datetime.utcnow()
+        db.session.commit()
+
         return redirect(url_for('dashboard'))
 
     return render_template('login.html')
+
 
 @app.route('/logout')
 @login_required
@@ -323,3 +342,4 @@ if __name__ == '__main__':
         db.create_all()
         add_missing_column()
     app.run(debug=True, port=5050)
+ 
