@@ -127,26 +127,17 @@ def register():
         if User.query.filter_by(email=email).first():
             flash('Email already registered')
             return redirect(url_for('register'))
+        else:
+            hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+            new_user = User(username=username, email=email, password=hashed_password)
+            db.session.add(new_user)
+            db.session.commit()
 
-        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
-        
-        db.session.add(new_user)
-        from datetime import datetime
-
-        new_user = User(
-        username=username,
-        email=email,
-        password=hashed_password,
-        
-        registered_at=datetime.utcnow()
-        )
-
-        db.session.commit()
-
-        flash('Registration successful! Please log in.')
-        return redirect(url_for('login'))
+            flash('Registration successful! Please log in.')
+            return redirect(url_for('login'))
 
     return render_template('register.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
