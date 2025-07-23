@@ -10,7 +10,14 @@ from fpdf import FPDF
 from io import StringIO
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://task_tracker_db_kz0d_user:QKbK26YMMN6KktNZrAcn4aiaUftmohAr@dpg-d20hi47gi27c73ckorr0-a/task_tracker_db_kz0d'
+import os
+
+if os.environ.get('RENDER') == 'true':
+    # Use PostgreSQL in Render
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://task_tracker_db_kz0d_user:QKbK26YMMN6KktNZrAcn4aiaUftmohAr@dpg-d20hi47gi27c73ckorr0-a/task_tracker_db_kz0d'
+else:
+    # Use SQLite locally
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
