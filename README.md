@@ -6,8 +6,9 @@ A full-stack web application developed during my Flipkart internship that allows
 
 📄 Documentation & Slides
 
-- [📘 Project Documentation (PDF)](docs/Online_Task_Tracker_Documentation.pdf)
-- [📊 Final Presentation (PPT)](docs/Online_Task_Tracker_Presentation.pptx)
+- [📘 Project Documentation (docx)]in above files
+- [📊 Final Presentation (PPT)]in the above files
+  
 ---
 ## 🚀 Features
 
