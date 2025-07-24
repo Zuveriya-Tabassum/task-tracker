@@ -4,6 +4,11 @@ A full-stack web application developed during my Flipkart internship that allows
 
 ---
 
+📄 Documentation & Slides
+
+- [📘 Project Documentation (PDF)](docs/Online_Task_Tracker_Documentation.pdf)
+- [📊 Final Presentation (PPT)](docs/Online_Task_Tracker_Presentation.pptx)
+---
 ## 🚀 Features
 
 - ✅ User Registration & Login (Flask-Login)
@@ -38,4 +43,6 @@ A full-stack web application developed during my Flipkart internship that allows
 
 ```bash
 git clone https://github.com/Zuveriya-Tabassum/task-tracker.git
-cd task-tracker
+cd task-track
+
+ 
